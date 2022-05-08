@@ -47,7 +47,7 @@ void setCursor(int x, int y);
 void moverBloco(Bloco *bloco, int novoX, int novoY);
 void desenharBorda();
 void moverTerreno(Terreno *terreno);
-Bloco *criarBloco(int x, int y, int tamanho);
+Bloco *criarBloco(int x, int y, int tamanho, int esperarAleatorio);
 void movimentarBlocos(Bloco blocos[], int nBlocos);
 
 int main()
@@ -67,9 +67,9 @@ int main()
     // Capturar evento para iniciar a partida.
 
     // Inicializar os blocos.
-    Bloco blocos[3] = {*criarBloco(nColunas / 6, alturaTerreno, 1),
-                       *criarBloco(nColunas / 2, alturaTerreno, 2),
-                       *criarBloco(nColunas / 3, alturaTerreno, 3)};
+    Bloco blocos[3] = {*criarBloco(nColunas / 6, alturaTerreno, 1, -2),
+                       *criarBloco(nColunas / 2, alturaTerreno, 2, -2),
+                       *criarBloco(nColunas / 3, alturaTerreno, 3, -2)};
     for (int i = 0; i < 3; i++)
     {
         Bloco bloco = blocos[i];
@@ -130,26 +130,12 @@ void moverBloco(Bloco *bloco, int novoX, int novoY)
         }
     }
 
-    // Conferir limites da tela.
-    // if (novoX = limiteInferiorX-1)
-    // {
-    //     if (bloco->esperarAleatorio == 0)
-    //     {
-    //         novoX = limiteSuperiorX;
-    //     }
-    //     else
-    //     {
-    //         bloco->esperarAleatorio = bloco->esperarAleatorio == -1 ? rand() % 21 : bloco->esperarAleatorio - 1;
-    //         return;
-    //     }
-    // }
-
     // Desenhar bloco na nova posição.
-    for (int i = bloco->tamanho; i>0 && novoX >=limiteInferiorX; i--)
+    for (int i = bloco->tamanho; i > 0 && novoX >= limiteInferiorX; i--)
     {
-        setCursor(bloco->tamanho+novoX - i, novoY);
+        setCursor(bloco->tamanho + novoX - i, novoY);
         putchar(caractereBloco);
-        setCursor(bloco->tamanho+novoX - i, novoY - 1);
+        setCursor(bloco->tamanho + novoX - i, novoY - 1);
         putchar(caractereBloco);
     }
 
@@ -200,13 +186,14 @@ void setCursor(int x, int y)
                              coord);                          // Nova coordenada.
 }
 
-Bloco *criarBloco(int x, int y, int tamanho)
+Bloco *criarBloco(int x, int y, int tamanho, int esperarAleatorio)
 {
     Bloco *bloco = (Bloco *)malloc(sizeof(Bloco));
     bloco->x = x;
     bloco->y = y;
     bloco->tamanho = tamanho;
     bloco->moverBloco = &moverBloco; // Definindo o pseudométodo.
+    bloco->esperarAleatorio = esperarAleatorio;
     return bloco;
 }
 
@@ -228,8 +215,25 @@ void movimentarBlocos(Bloco blocos[], int nBlocos)
     int novoX = 0;
     for (int i = 0; i < nBlocos; i++)
     {
-        if(blocos[i].x - 1<limiteInferiorX)
-            blocos[i].esperarAleatorio=-1;
-        blocos[i].moverBloco(&blocos[i], blocos[i].x - 1, blocos[i].y);
+        if (blocos[i].esperarAleatorio == -1)
+        {
+            blocos[i].esperarAleatorio = rand() % 10;
+        }
+        else if (blocos[i].esperarAleatorio > 0)
+        {
+            blocos[i].esperarAleatorio--;
+        }
+        else if (blocos[i].esperarAleatorio == 0)
+        {
+            blocos[i].esperarAleatorio = -2;
+            blocos[i].x = limiteSuperiorX;
+        }
+        else
+        {
+            if (blocos[i].x - 1 < limiteInferiorX)
+                blocos[i].esperarAleatorio = -1;
+            else
+                blocos[i].moverBloco(&blocos[i], blocos[i].x - 1, blocos[i].y);
+        }
     }
 }
