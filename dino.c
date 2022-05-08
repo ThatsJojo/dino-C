@@ -14,8 +14,8 @@ int limiteInferiorX = 2;
 int limiteSuperiorX = 72;
 int nColunas;
 int alturaTerreno = 9;
-float tempoAtualizacao = 6000;
-float fracaoTempo = 0.001;
+float tempoAtualizacao = 10;
+float fracaoTempo = 1;
 char caractereBorda = '*';
 
 // Teclas.
@@ -63,7 +63,7 @@ int main()
 
     // Capturar evento para iniciar a partida.
 
-    // Criar os blocos.
+    // Inicializar os blocos.
     Bloco blocos[3] = {*criarBloco(nColunas / 6, alturaTerreno - 1, 1),
                        *criarBloco(nColunas / 2, alturaTerreno - 1, 2),
                        *criarBloco(nColunas / 3, alturaTerreno - 1, 3)};
@@ -73,20 +73,37 @@ int main()
         bloco.moverBloco(&bloco, bloco.x, bloco.y);
     }
 
+    // Inicializar o terreno.
+    moverTerreno(&terreno);
+
     // Mover os blocos.
 
     // Mover terreno.
     int nivel = 1;
-    for (float i = 0; 1; i += fracaoTempo)
+    int nivelCounter = 0;
+    int terrenoCounter = 0;
+    for (int i = 0; 1; i++)
     {
-        if (i > (velocidade/nivel) * tempoAtualizacao)
+        Sleep(fracaoTempo);
+        nivelCounter++;
+        terrenoCounter++;
+
+        // Nível aumenta a cada 20 frações de tempo.
+        if (nivelCounter == 200)
+        {
+            nivel++;
+            nivelCounter = 0;
+        }
+
+        // Nível aumenta => tempo de atualizar terreno diminui.
+        if (terrenoCounter > 10 / nivel)
         {
             moverTerreno(&terreno);
-            setCursor(limiteInferiorX, limiteInferiorY + 2);
+            terrenoCounter = 0;
         }
-        if(i >tempoAtualizacao){
-            nivel++;
-        }
+        
+        setCursor(limiteInferiorX, limiteInferiorY + 2);
+        printf("Nivel: %i", nivel);
     }
 
     // fim
