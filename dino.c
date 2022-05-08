@@ -14,6 +14,7 @@ int limiteInferiorX = 2;
 int limiteSuperiorX = 72;
 int nColunas;
 int alturaTerreno = 9;
+int jogadorX;
 float tempoAtualizacao = 10;
 float fracaoTempo = 1;
 char caractereBorda = '*';
@@ -34,6 +35,13 @@ typedef struct Bloco
     void (*moverBloco)(struct Bloco *, int novoX, int novoY);
 } Bloco;
 
+typedef struct Jogador
+{
+    int x;
+    int y;
+    void (*pular)(struct Jogador *);
+} Jogador;
+
 // Classe utilizada para desenho do chão;
 typedef struct Terreno
 {
@@ -49,9 +57,15 @@ void desenharBorda();
 void moverTerreno(Terreno *terreno);
 Bloco *criarBloco(int x, int y, int tamanho, int esperarAleatorio);
 void movimentarBlocos(Bloco blocos[], int nBlocos);
+void pular(Jogador *jogador);
 
 int main()
 {
+    jogadorX = limiteInferiorX + 2;
+    Jogador *jogador = (Jogador *)malloc(sizeof(Jogador));
+    jogador->x = jogadorX;
+    jogador->y = alturaTerreno;
+    jogador->pular = &pular;
     // Iniciando variáveis dinâmicas
     nColunas = 1 + limiteSuperiorX - limiteInferiorX;
     LIMPA_TELA;
@@ -85,8 +99,23 @@ int main()
     int terrenoCounter = 0;
     Bloco bloco;
     int nBlocos = sizeof(blocos) / sizeof(blocos[0]);
+    int tecla = 0;
     for (int i = 0; 1; i++)
     {
+        if (kbhit())
+        {
+            tecla = getch();
+
+            switch (tecla)
+            {
+            case 13:
+                // Iniciar partida
+                break;
+            case 72: // baixo
+                jogador->pular(jogador);
+                break;
+            }
+        }
         Sleep(fracaoTempo);
         nivelCounter++;
         terrenoCounter++;
@@ -236,4 +265,12 @@ void movimentarBlocos(Bloco blocos[], int nBlocos)
                 blocos[i].moverBloco(&blocos[i], blocos[i].x - 1, blocos[i].y);
         }
     }
+}
+
+void pular(Jogador *jogar)
+{
+    setCursor(Jogador->x, alturaTerreno);
+    putchar(' ');
+    setCursor(Jogador->x, alturaTerreno - 1);
+    putchar('X');
 }
