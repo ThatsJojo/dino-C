@@ -1,2 +1,5 @@
 # dino-C
-Desenvolvendo um similar ao jogo T-Rex Game do google
+Utilizando a linguagem C para desenvolver um jogo similar ao T-Rex Game (joguinho do dinossauro do google chrome).
+
+Esse desafio foi proposto no grupo de estudos LogicalCurve, com os seguintes requisitos:
+
