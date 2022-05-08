@@ -17,6 +17,7 @@ int alturaTerreno = 9;
 float tempoAtualizacao = 10;
 float fracaoTempo = 1;
 char caractereBorda = '*';
+char caractereBloco = 'A';
 
 // Teclas.
 int ENTER = 13;
@@ -28,6 +29,7 @@ typedef struct Bloco
     int x;
     int y;
     int tamanho;
+    int esperarAleatorio;
     // Utilizando abstração de pseudométodo.
     void (*moverBloco)(struct Bloco *, int novoX, int novoY);
 } Bloco;
@@ -46,6 +48,7 @@ void moverBloco(Bloco *bloco, int novoX, int novoY);
 void desenharBorda();
 void moverTerreno(Terreno *terreno);
 Bloco *criarBloco(int x, int y, int tamanho);
+void movimentarBlocos(Bloco blocos[], int nBlocos);
 
 int main()
 {
@@ -64,9 +67,9 @@ int main()
     // Capturar evento para iniciar a partida.
 
     // Inicializar os blocos.
-    Bloco blocos[3] = {*criarBloco(nColunas / 6, alturaTerreno - 1, 1),
-                       *criarBloco(nColunas / 2, alturaTerreno - 1, 2),
-                       *criarBloco(nColunas / 3, alturaTerreno - 1, 3)};
+    Bloco blocos[3] = {*criarBloco(nColunas / 6, alturaTerreno, 1),
+                       *criarBloco(nColunas / 2, alturaTerreno, 2),
+                       *criarBloco(nColunas / 3, alturaTerreno, 3)};
     for (int i = 0; i < 3; i++)
     {
         Bloco bloco = blocos[i];
@@ -76,12 +79,12 @@ int main()
     // Inicializar o terreno.
     moverTerreno(&terreno);
 
-    // Mover os blocos.
-
-    // Mover terreno.
+    // Mover objetos.
     int nivel = 1;
     int nivelCounter = 0;
     int terrenoCounter = 0;
+    Bloco bloco;
+    int nBlocos = sizeof(blocos) / sizeof(blocos[0]);
     for (int i = 0; 1; i++)
     {
         Sleep(fracaoTempo);
@@ -100,8 +103,10 @@ int main()
         {
             moverTerreno(&terreno);
             terrenoCounter = 0;
+
+            movimentarBlocos(blocos, nBlocos);
         }
-        
+
         setCursor(limiteInferiorX, limiteInferiorY + 2);
         printf("Nivel: %i", nivel);
     }
@@ -113,15 +118,44 @@ void moverBloco(Bloco *bloco, int novoX, int novoY)
 {
     // Apagar bloco da posição atual.
     setCursor(bloco->x, bloco->y);
-    putchar(' ');
+
+    for (int i = 0; i < bloco->tamanho && bloco->x + i <= limiteSuperiorX; i++)
+    {
+        if (bloco->x + i > limiteInferiorX)
+        {
+            setCursor(bloco->x + i, bloco->y);
+            putchar(' ');
+            setCursor(bloco->x + i, bloco->y - 1);
+            putchar(' ');
+        }
+    }
 
     // Conferir limites da tela.
+    // if (novoX = limiteInferiorX-1)
+    // {
+    //     if (bloco->esperarAleatorio == 0)
+    //     {
+    //         novoX = limiteSuperiorX;
+    //     }
+    //     else
+    //     {
+    //         bloco->esperarAleatorio = bloco->esperarAleatorio == -1 ? rand() % 21 : bloco->esperarAleatorio - 1;
+    //         return;
+    //     }
+    // }
 
     // Desenhar bloco na nova posição.
-    setCursor(novoX, novoY);
-    printf("OPA! %i %i %i\n", bloco->x, bloco->y, bloco->tamanho);
+    for (int i = bloco->tamanho; i>0 && novoX >=limiteInferiorX; i--)
+    {
+        setCursor(bloco->tamanho+novoX - i, novoY);
+        putchar(caractereBloco);
+        setCursor(bloco->tamanho+novoX - i, novoY - 1);
+        putchar(caractereBloco);
+    }
 
     // Atualizar coordenadas da Struct Bloco.
+    bloco->x = novoX;
+    bloco->y = novoY;
 }
 
 // Desenha a borda (exterior) da tela lógica.
@@ -184,7 +218,18 @@ void moverTerreno(Terreno *terreno)
     int inicio = terreno->inicioAatual;
     for (int i = 0; i < nColunas; i++)
     {
-        printf("%c", terreno->terreno[inicio]);
+        putchar(terreno->terreno[inicio]);
         inicio = inicio < (terreno->tamanhoTerreno - 1) ? inicio + 1 : 0;
+    }
+}
+
+void movimentarBlocos(Bloco blocos[], int nBlocos)
+{
+    int novoX = 0;
+    for (int i = 0; i < nBlocos; i++)
+    {
+        if(blocos[i].x - 1<limiteInferiorX)
+            blocos[i].esperarAleatorio=-1;
+        blocos[i].moverBloco(&blocos[i], blocos[i].x - 1, blocos[i].y);
     }
 }
